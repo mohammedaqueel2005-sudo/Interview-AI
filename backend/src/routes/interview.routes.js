@@ -1,38 +1,76 @@
 const express = require("express");
-const authMiddleWare = require("../middlewares/auth.middleware")
+const authMiddleware = require("../middlewares/auth.middleware");
 const interviewController = require("../controller/interview.controller");
-const upload = require("../middlewares/file.middleware")
+const upload = require("../middlewares/file.middleware");
+const { interviewLimiter } = require("../middlewares/rateLimiter.middleware");
 
 const interviewRouter = express.Router();
 
 /**
  * @route POST /api/interview
- * @description generate new interview report on the basis of user self description, job description and resume pdf
- * @access private
+ * @description Generate new interview report on the basis of user self-description, job description, and resume PDF
+ * @access Private
  */
-interviewRouter.post("/", authMiddleWare.authUser, upload.single("resume"),interviewController.generateInterviewReportControoler);
+interviewRouter.post(
+    "/",
+    authMiddleware.authUser,
+    interviewLimiter,
+    upload.single("resume"),
+    interviewController.generateInterviewReportController
+);
 
 /**
  * @route GET /api/interview/report/:interviewId
- * @description get interview report by interviewId
- * @access private
+ * @description Get interview report by interviewId
+ * @access Private
  */
-interviewRouter.get("/report/:interviewId", authMiddleWare.authUser, interviewController.getInterviewByIdController);
+interviewRouter.get(
+    "/report/:interviewId",
+    authMiddleware.authUser,
+    interviewController.getInterviewByIdController
+);
 
 /**
  * @route GET /api/interview
- * @description get all interview report of logged in user
- * @access private
+ * @description Get all interview reports of logged in user
+ * @access Private
  */
-
-interviewRouter.get("/", authMiddleWare.authUser,interviewController.getAllInterviewReportsController);
+interviewRouter.get(
+    "/",
+    authMiddleware.authUser,
+    interviewController.getAllInterviewReportsController
+);
 
 /**
- * @route POST /api/interview/resume/pdf
- * @description genrate resume pdf on the basis of user self description, resume, job description
- * @access private
+ * @route POST /api/interview/report/:interviewId/assess
+ * @description Submit a candidate's answer for evaluation and scoring
+ * @access Private
  */
+interviewRouter.post(
+    "/report/:interviewId/assess",
+    authMiddleware.authUser,
+    interviewLimiter,
+    interviewController.evaluateAnswerController
+);
 
-interviewRouter.post("/resume/pdf/:interviewReportId",authMiddleWare.authUser, interviewController.genertateResumePdfController);
+// Route alias for assessment
+interviewRouter.post(
+    "/:interviewId/assess",
+    authMiddleware.authUser,
+    interviewLimiter,
+    interviewController.evaluateAnswerController
+);
+
+/**
+ * @route POST /api/interview/resume/pdf/:interviewReportId
+ * @description Generate tailored resume PDF on the basis of candidate profile and job description
+ * @access Private
+ */
+interviewRouter.post(
+    "/resume/pdf/:interviewReportId",
+    authMiddleware.authUser,
+    interviewLimiter,
+    interviewController.generateResumePdfController
+);
 
 module.exports = interviewRouter;

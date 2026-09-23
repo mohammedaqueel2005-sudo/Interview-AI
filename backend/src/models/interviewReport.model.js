@@ -34,16 +34,44 @@ const mongoose = require('mongoose');
 const technicalQuestionSchema = new mongoose.Schema({
     question: {
         type: String,
-        required: [true, "Technn=ical question is required"],
+        required: [true, "Technical question is required"],
     },
     intention: {
-        type:String,
-        required: [true, "Intention is requierd"]
+        type: String,
+        default: ""
     },
     answer: {
         type: String,
-        required: [true, "Answer is required"],
-    }
+        default: ""
+    },
+    skill: {
+        type: String,
+        default: ""
+    },
+    difficulty: {
+        type: String,
+        enum: ["easy", "medium", "hard"],
+        default: "medium"
+    },
+    category: {
+        type: String,
+        default: "General"
+    },
+    source: {
+        type: String,
+        enum: ["resume", "jd", "gap", "behavioral", "project"],
+        default: "jd"
+    },
+    reason: {
+        type: String,
+        default: "Relevant to job requirements"
+    },
+    expectedTopics: [{
+        type: String
+    }],
+    followUpQuestions: [{
+        type: String
+    }]
 }, {
     _id: false
 });
@@ -51,16 +79,32 @@ const technicalQuestionSchema = new mongoose.Schema({
 const behavioralQuestionSchema = new mongoose.Schema({
     question: {
         type: String,
-        required: [true, "Technn=ical question is required"],
+        required: [true, "Behavioral question is required"],
     },
     intention: {
-        type:String,
-        required: [true, "Intention is requierd"]
+        type: String,
+        default: ""
     },
     answer: {
         type: String,
-        required: [true, "Answer is required"],
-    }
+        default: ""
+    },
+    category: {
+        type: String,
+        default: "General"
+    },
+    source: {
+        type: String,
+        enum: ["resume", "jd", "gap", "behavioral", "project"],
+        default: "behavioral"
+    },
+    reason: {
+        type: String,
+        default: "Evaluates cultural and situational fit"
+    },
+    starTips: [{
+        type: String
+    }]
 }, {
     _id: false
 });
@@ -74,6 +118,14 @@ const skillGapSchema = new mongoose.Schema({
         type: String,
         enum: ["low", "medium", "high"],
         required: [true, "Severity is required"]
+    },
+    category: {
+        type: String,
+        default: "Technical"
+    },
+    reason: {
+        type: String,
+        default: ""
     }
 }, {
     _id: false
@@ -91,7 +143,83 @@ const preparationPlanSchema = new mongoose.Schema({
     tasks: [{
         type: String,
         required: [true, "Task is required"]
-    }]
+    }],
+    priority: {
+        type: String,
+        enum: ["critical", "important", "optional"],
+        default: "important"
+    },
+    reason: {
+        type: String,
+        default: ""
+    },
+    completed: {
+        type: Boolean,
+        default: false
+    }
+}, {
+    _id: false
+});
+
+const assessmentSchema = new mongoose.Schema({
+    questionIndex: {
+        type: Number
+    },
+    questionText: {
+        type: String,
+        required: true
+    },
+    userAnswer: {
+        type: String,
+        required: true
+    },
+    score: {
+        type: Number,
+        min: 1,
+        max: 10,
+        required: true
+    },
+    technicalAccuracy: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0
+    },
+    communication: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0
+    },
+    completeness: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0
+    },
+    starStructure: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0
+    },
+    strengths: [{
+        type: String
+    }],
+    missingPoints: [{
+        type: String
+    }],
+    improvementSuggestions: [{
+        type: String
+    }],
+    betterAnswer: {
+        type: String,
+        default: ""
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 const interviewReportSchema = new mongoose.Schema({
@@ -101,32 +229,61 @@ const interviewReportSchema = new mongoose.Schema({
     },
     resume: {
         type: String,
+        default: ""
     },
     selfDescription: {
         type: String,
+        default: ""
+    },
+    structuredResume: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null
+    },
+    structuredJd: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null
+    },
+    skillAnalysis: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null
+    },
+    skillsAnalysis: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null
     },
     matchScore: {
         type: Number,
         min: 0,
-        max: 100
+        max: 100,
+        default: 0
     },
     technicalQuestions: [technicalQuestionSchema],
     behavioralQuestions: [behavioralQuestionSchema],
     skillGaps: [skillGapSchema],
     preparationPlan: [preparationPlanSchema],
+    roadmap: [preparationPlanSchema],
+    verifiedStrengths: [{
+        type: String
+    }],
+    assessments: [assessmentSchema],
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users"
+        ref: "users",
+        required: true,
+        index: true
     },
     title: {
         type: String,
-        required: [true, "Job title is required"]
+        required: [true, "Job title is required"],
+        default: "Target Role"
     }
-    
 }, {
     timestamps: true
 });
 
-const interviewReportModel = mongoose.model("interiewReport", interviewReportSchema);
+interviewReportSchema.index({ user: 1, createdAt: -1 });
+
+// Register with both correct name and legacy name for backwards compatibility
+const interviewReportModel = mongoose.models.interviewReport || mongoose.model("interviewReport", interviewReportSchema);
 
 module.exports = interviewReportModel;

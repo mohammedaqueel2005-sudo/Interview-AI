@@ -9,13 +9,27 @@ const Register = () => {
   const [username, setUserame] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const {loading, handleRegister} = useAuth();
 
   const handleSubmit = async (e) => {
         e.preventDefault();
-        await handleRegister({username, email, password});
-        navigate('/');
+        setErrorMessage("");
+        if (!username.trim() || !email.trim() || !password.trim()) {
+            setErrorMessage("Please fill in all fields.");
+            return;
+        }
+        if (password.length < 6) {
+            setErrorMessage("Password must be at least 6 characters long.");
+            return;
+        }
+        const result = await handleRegister({username, email, password});
+        if (result && result.success) {
+            navigate('/');
+        } else {
+            setErrorMessage(result?.error || "Registration failed. Please try again.");
+        }
     }
 
     if(loading) {
@@ -29,6 +43,19 @@ const Register = () => {
     <main>
         <div className="form-container">
             <h1>Register</h1>
+            {errorMessage && (
+                <div style={{
+                    backgroundColor: "rgba(255, 45, 120, 0.15)",
+                    border: "1px solid #ff2d78",
+                    color: "#ff8ab2",
+                    padding: "0.75rem",
+                    borderRadius: "6px",
+                    marginBottom: "1rem",
+                    fontSize: "0.9rem"
+                }}>
+                    {errorMessage}
+                </div>
+            )}
             
             <form onSubmit={handleSubmit}>
 
