@@ -1,9 +1,12 @@
 import {createBrowserRouter} from 'react-router';
-import Login from './features/auth/pages/login';
+import Login from './features/auth/pages/Login';
 import Register from './features/auth/pages/Register';
 import Protected from './features/auth/components/Protected';
-import Home from './features/interview/pages/Home';
-import Interview from './features/interview/pages/interview';
+import Dashboard from './pages/Dashboard';
+import InterviewSetup from './pages/InterviewSetup';
+import InterviewReport from './pages/InterviewReport';
+import History from './pages/History';
+import { Navigate } from 'react-router';
 
 export const router = createBrowserRouter([
     {
@@ -16,10 +19,13 @@ export const router = createBrowserRouter([
     },
     {
         path: "/",
-        element: <Protected ><Home/></Protected>
+        element: <Protected ><Dashboard/></Protected>
     },
+    { path: "/new-interview", element: <Protected><InterviewSetup/></Protected> },
+    { path: "/history", element: <Protected><History/></Protected> },
     {
         path: "/interview/:interviewId",
-        element: <Protected><Interview/></Protected>
-    }
+        element: <Protected><InterviewReport/></Protected>
+    },
+    { path: "*", element: <Navigate to="/" replace /> }
 ]);

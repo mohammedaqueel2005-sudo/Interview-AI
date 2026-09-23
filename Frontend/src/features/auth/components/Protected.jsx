@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router';
 
@@ -7,11 +6,11 @@ const Protected = ({children}) => {
 
 
     if(loading) {
-        return (<main><h1>Loading.....</h1></main>);
+        return (<main className="state state-loading" role="status"><span className="spinner" />Restoring your session…</main>);
     }
 
     if(!user) {
-        return <Navigate to={'/login'} />
+        return <Navigate to={'/login'} replace />
     }
   return children;
 }
